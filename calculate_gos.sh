@@ -2,7 +2,7 @@
 set -o errexit     #to make your script exit when a command fails.
 set -o nounset     #to exit when your script tries to use undeclared variables.
 #set -x 
-SCENARIOS="CallA_SIP_PSTN_SIP CallA_SIP_SIP CallA_SIP_PSTN2_SIP"
+SCENARIOS="CallA_SIP_SIP CallA_SIP_PSTN_SIP"
 
 usage()
 {
@@ -31,8 +31,8 @@ input()
     done
 
   clear
-  printf "%-20s %-20s %-20s %-20s\n " "Scenario" "GoS %" "Starttime" "Stoptime"
-  printf "%-80s\n" | tr " " -
+  printf "%-30s %-20s %-20s %-20s\n " "Scenario" "GoS %" "Starttime" "Stoptime"
+  printf "%-90s\n" | tr " " -
 }
 
 
@@ -41,10 +41,14 @@ calculate_GoS()
 regex_1='[0-9]*'    
 for scenario in $SCENARIOS
   do
-    startv=$(grep -e "$starttime" ${CALLSTATFILE} | grep -w -e ${scenario} | head -1 | awk '{printf "%d",$12}')
-    startsuccess=$(grep -e "$starttime" ${CALLSTATFILE} | grep -w -e ${scenario} | head -1 | awk '{printf "%d",$14}')
-    endv=$(grep -e "${endtime}" ${CALLSTATFILE} | grep -w -e ${scenario} | head -1 | awk '{printf "%d",$12}')
-    endsuccess=$(grep -e "${endtime}" ${CALLSTATFILE} | grep -w -e ${scenario} | head -1 | awk '{printf "%d",$14}')
+    startv=$(grep -e "$starttime" ${CALLSTATFILE} | grep -w -e ${scenario} | head -1 | awk -F "|" '{printf "%d",$12}')
+    startsuccess=$(grep -e "$starttime" ${CALLSTATFILE} | grep -w -e ${scenario} | head -1 | awk -F "|" '{printf "%d",$14}')
+    endv=$(grep -e "${endtime}" ${CALLSTATFILE} | grep -w -e ${scenario} | head -1 | awk -F "|" '{printf "%d",$12}')
+    endsuccess=$(grep -e "${endtime}" ${CALLSTATFILE} | grep -w -e ${scenario} | head -1 | awk -F "|" '{printf "%d",$14}')
+    #echo "start value: $startv"
+    #echo "startsuccess: $startsuccess"
+    #echo "endv: $endv"
+    #echo "endsuccess: $endsuccess"
     if [[ -z $endsuccess  ]]; then
         clear
         printf "Script did not run properly. Probably the date and time specified did not exist in the call stat file\n"
@@ -58,7 +62,7 @@ for scenario in $SCENARIOS
        printf "Try with a diffrent date\n"
        input
     fi
-    printf "%-20s %-20.2f %-20s %-20s\n" "${scenario}" "${resultGos}" "${starttime}" "${endtime}"
+    printf "%-30s %-20.2f %-20s %-20s\n" "${scenario}" "${resultGos}" "${starttime}" "${endtime}"
   done
   printf "\n"
 }
